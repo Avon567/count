@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Birthday Countdown</title>
+  <style>
+    :root {
+      --bg:#f9fafb;
+      --card:#ffffff;
+      --accent:#2563eb;
+      --accent-light:#60a5fa;
+      --muted:#64748b;
+      --border:#e5e7eb;
+      --shadow: rgba(0,0,0,0.06);
+      --text:#111827;
+    }
+    body.dark {
+      --bg:#0f172a;
+      --card:#1e293b;
+      --text:#f1f5f9;
+      --muted:#94a3b8;
+      --border:#334155;
+      --shadow:rgba(0,0,0,0.4);
+    }
+    *{box-sizing:border-box}
+    body {
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      background:var(--bg);
+      color:var(--text);
+      padding:24px;
+      transition:background 0.4s ease,color 0.4s ease;
+    }
+    .widget {
+      width:100%;
+      max-width:520px;
+      background:var(--card);
+      border-radius:14px;
+      box-shadow:0 8px 24px var(--shadow);
+      border:1px solid var(--border);
+      padding:20px;
+      position:relative;
+      animation:fadeIn 0.8s ease;
+    }
+    @keyframes fadeIn {from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+    .header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:14px;
+    }
+    .logo-title {
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo {
+      width:50px;height:50px;
+      background:linear-gradient(135deg,var(--accent), var(--accent-light));
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      animation:pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100%{transform:scale(1);}
+      50%{transform:scale(1.07);}
+    }
+    .logo svg {width:26px;height:26px;fill:#fff;}
+    .title { font-size:19px;font-weight:600; }
+    .subtitle { color:var(--muted);font-size:13px;margin-top:2px; }
+
+    .toggle-btn {
+      width:42px; height:42px;
+      display:flex; align-items:center; justify-content:center;
+      border-radius:10px; background:var(--card);
+      border:1px solid var(--border); cursor:pointer;
+      position:relative; overflow:hidden;
+      transition:transform 0.2s ease;
+    }
+    .toggle-btn:hover {transform:rotate(15deg);}
+    .toggle-btn .icon {
+      position:absolute;
+      width:22px;height:22px;
+      fill:var(--text);
+      opacity:0; transform:scale(0.6);
+      transition:opacity 0.4s ease, transform 0.4s ease;
+    }
+    .toggle-btn .moon { opacity:1; transform:scale(1); }
+    body.dark .toggle-btn .moon { opacity:0; transform:scale(0.6); }
+    body.dark .toggle-btn .sun { opacity:1; transform:scale(1); }
+
+    .controls {
+      display:flex;
+      gap:8px;
+      margin:12px 0 18px 0;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    input[type="date"]{
+      padding:11px 13px;
+      border-radius:9px;
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      font-size:14px;
+      outline:none;
+      flex:1;
+      transition:border 0.3s, box-shadow 0.3s;
+    }
+    input[type="date"]:focus {
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(37,99,235,0.2);
+    }
+
+    .btn-row {
+      display:flex;
+      gap:8px;
+      flex:1;
+    }
+    button.action {
+      flex:1;
+      padding:11px 14px;
+      border-radius:9px;
+      border:0;
+      cursor:pointer;
+      font-weight:600;
+      background:linear-gradient(90deg,var(--accent), var(--accent-light));
+      color:#fff;
+      box-shadow:0 4px 14px rgba(37,99,235,0.25);
+      transition:transform 0.2s, box-shadow 0.3s;
+    }
+    button.action:hover {transform:translateY(-2px); box-shadow:0 6px 16px rgba(37,99,235,0.35);}
+    button.action:active {transform:scale(0.96);}
+
+    .countdown {
+      display:grid;
+      grid-template-columns: repeat(auto-fit,minmax(100px,1fr));
+      gap:12px;
+      margin-top:8px;
+    }
+    .tile {
+      background:#f8fafc;
+      padding:14px 12px;
+      text-align:center;
+      border-radius:9px;
+      border:1px solid var(--border);
+      transition:background 0.3s;
+    }
+    body.dark .tile { background:#0f172a; }
+    .num { font-size:26px;font-weight:700;color:var(--accent); display:inline-block; }
+    .lbl { font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:0.06em; }
+
+    .flip { animation:flipIn 0.6s ease; }
+    @keyframes flipIn {
+      0%{transform:rotateX(90deg);opacity:0;}
+      50%{transform:rotateX(-10deg);opacity:1;}
+      100%{transform:rotateX(0);opacity:1;}
+    }
+
+    .footer {
+      margin-top:16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .small { font-size:12px;color:var(--muted); }
+
+    @media (max-width:480px){
+      .controls {flex-direction:column;}
+      .controls input {width:100%;}
+      .btn-row {width:100%;}
+    }
+  </style>
+</head>
+<body>
+  <div class="widget" id="birthday-widget" aria-live="polite">
+    <div class="header">
+      <div class="logo-title">
+        <div class="logo" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 2a1 1 0 0 1 .993.883L13 3v1a1 1 0 0 1-1.993.117L11 4V3a1 1 0 0 1 1-1Zm6 9v8h2a1 1 0 0 1 .117 1.993L20 20H4a1 1 0 0 1-.117-1.993L4 18h2v-8H4a1 1 0 0 1-.117-1.993L4 8h16a1 1 0 0 1 .117 1.993L20 10h-2Zm-4 0h-4v8h4v-8Z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="title">Birthday Countdown</div>
+          <div class="subtitle">See how many days until the next birthday</div>
+        </div>
+      </div>
+      <button class="toggle-btn" id="dark-toggle" aria-label="Toggle dark mode">
+        <svg class="icon moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 1 0 9.79 9.79Z"/>
+        </svg>
+        <svg class="icon sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 1v2m0 18v2m11-11h-2M3 12H1m16.95 6.95-1.41-1.41M6.46 6.46 5.05 5.05m13.9 0-1.41 1.41M6.46 17.54 5.05 18.95"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="controls" role="region" aria-label="Birthday controls">
+      <input id="date-input" type="date" aria-label="Birthday date" />
+      <div class="btn-row">
+        <button id="set-btn" class="action">Set</button>
+        <button id="share-btn" class="action">Share</button>
+      </div>
+    </div>
+
+    <div id="countdown" class="countdown">
+      <div class="tile"><div class="num" id="months">--</div><div class="lbl">Months</div></div>
+      <div class="tile"><div class="num" id="weeks">--</div><div class="lbl">Weeks</div></div>
+      <div class="tile"><div class="num" id="days">--</div><div class="lbl">Days</div></div>
+      <div class="tile"><div class="num" id="hours">--</div><div class="lbl">Hours</div></div>
+      <div class="tile"><div class="num" id="minutes">--</div><div class="lbl">Minutes</div></div>
+      <div class="tile"><div class="num" id="seconds">--</div><div class="lbl">Seconds</div></div>
+    </div>
+
+    <div class="footer">
+      <div class="small" id="message">Pick your birthday above.</div>
+      <div class="small">
+        Made By <a href="https://github.com/abuzargaffaris" target="_blank">Abuzar Gaffari</a> • <time id="now-year"></time>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ✅ Unique keys for each page instance
+    const PAGE_ID = window.location.pathname + window.location.search;
+    const DATE_KEY = "birthday-widget-date-" + btoa(PAGE_ID);
+    const THEME_KEY = "birthday-widget-theme-" + btoa(PAGE_ID);
+
+    const ids=["months","weeks","days","hours","minutes","seconds"];
+    const dateInput=document.getElementById("date-input");
+    const setBtn=document.getElementById("set-btn");
+    const shareBtn=document.getElementById("share-btn");
+    const nowYearEl=document.getElementById("now-year");
+    const darkToggle=document.getElementById("dark-toggle");
+    nowYearEl.textContent=new Date().getFullYear();
+
+    if(localStorage.getItem(THEME_KEY)==="dark") document.body.classList.add("dark");
+
+    darkToggle.addEventListener("click",()=>{
+      document.body.classList.toggle("dark");
+      localStorage.setItem(THEME_KEY, document.body.classList.contains("dark")?"dark":"light");
+    });
+
+    function nextBirthdayFromInput(val){
+      if(!val) return null;
+      const [y,m,d]=val.split('-').map(Number);
+      const now=new Date();
+      let candidate=new Date(now.getFullYear(),m-1,d,0,0,0,0);
+      if(candidate<=now){ candidate=new Date(now.getFullYear()+1,m-1,d,0,0,0,0); }
+      return candidate;
+    }
+
+    function diffExact(now,target){
+      let months=(target.getFullYear()-now.getFullYear())*12+(target.getMonth()-now.getMonth());
+      let temp=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+      if(temp.getDate()>target.getDate()) months--;
+      let future=new Date(now);
+      future.setMonth(future.getMonth()+months);
+      let diff=target-future;
+      let weeks=Math.floor(diff/(1000*60*60*24*7));
+      let days=Math.floor((diff/(1000*60*60*24))%7);
+      let hours=Math.floor((diff/(1000*60*60))%24);
+      let minutes=Math.floor((diff/(1000*60))%60);
+      let seconds=Math.floor((diff/1000)%60);
+      return {months,weeks,days,hours,minutes,seconds};
+    }
+
+    function animateUpdate(id,newVal){
+      const el=document.getElementById(id);
+      if(el.textContent!==String(newVal)){
+        el.textContent=newVal;
+        el.classList.remove("flip");
+        void el.offsetWidth;
+        el.classList.add("flip");
+      }
+    }
+
+    function updateUI(target){
+      if(!target){
+        ids.forEach(id=>document.getElementById(id).textContent="--");
+        document.getElementById("message").textContent="Pick your birthday above.";
+        return;
+      }
+      const now=new Date();
+      if(now>=target){ target=new Date(target.getFullYear()+1,target.getMonth(),target.getDate()); }
+      const {months,weeks,days,hours,minutes,seconds}=diffExact(now,target);
+      animateUpdate("months",months);
+      animateUpdate("weeks",weeks);
+      animateUpdate("days",days);
+      animateUpdate("hours",hours);
+      animateUpdate("minutes",minutes);
+      animateUpdate("seconds",seconds);
+      const opts={month:"short",day:"numeric"};
+      document.getElementById("message").textContent="Next birthday on "+target.toLocaleDateString(undefined,opts)+".";
+      return target;
+    }
+
+    let saved=localStorage.getItem(DATE_KEY);
+    let target=saved?nextBirthdayFromInput(saved):null;
+    if(saved) dateInput.value=saved;
+    if(target) target=updateUI(target);
+
+    setBtn.addEventListener("click",()=>{
+      const v=dateInput.value;
+      if(!v){ localStorage.removeItem(DATE_KEY); target=null; updateUI(null); return; }
+      localStorage.setItem(DATE_KEY,v);
+      target=nextBirthdayFromInput(v);
+      target=updateUI(target);
+    });
+
+    shareBtn.addEventListener("click",()=>{
+      const v=dateInput.value;
+      if(v){
+        const url=new URL(window.location.href);
+        url.searchParams.set("bday",v);
+        navigator.clipboard.writeText(url.toString());
+        alert("Sharable link copied!");
+      }
+    });
+
+    setInterval(()=>{ if(target) target=updateUI(target); },1000);
+
+    const params=new URLSearchParams(window.location.search);
+    if(params.has("bday")){
+      const v=params.get("bday");
+      dateInput.value=v;
+      localStorage.setItem(DATE_KEY,v);
+      target=nextBirthdayFromInput(v);
+      target=updateUI(target);
+    }
+  </script>
+</body>
+</html>
