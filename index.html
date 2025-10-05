@@ -233,11 +233,6 @@
   </div>
 
   <script>
-    // ✅ Unique keys for each page instance
-    const PAGE_ID = window.location.pathname + window.location.search;
-    const DATE_KEY = "birthday-widget-date-" + btoa(PAGE_ID);
-    const THEME_KEY = "birthday-widget-theme-" + btoa(PAGE_ID);
-
     const ids=["months","weeks","days","hours","minutes","seconds"];
     const dateInput=document.getElementById("date-input");
     const setBtn=document.getElementById("set-btn");
@@ -245,13 +240,6 @@
     const nowYearEl=document.getElementById("now-year");
     const darkToggle=document.getElementById("dark-toggle");
     nowYearEl.textContent=new Date().getFullYear();
-
-    if(localStorage.getItem(THEME_KEY)==="dark") document.body.classList.add("dark");
-
-    darkToggle.addEventListener("click",()=>{
-      document.body.classList.toggle("dark");
-      localStorage.setItem(THEME_KEY, document.body.classList.contains("dark")?"dark":"light");
-    });
 
     function nextBirthdayFromInput(val){
       if(!val) return null;
@@ -307,39 +295,45 @@
       return target;
     }
 
-    let saved=localStorage.getItem(DATE_KEY);
-    let target=saved?nextBirthdayFromInput(saved):null;
-    if(saved) dateInput.value=saved;
-    if(target) target=updateUI(target);
-
-    setBtn.addEventListener("click",()=>{
-      const v=dateInput.value;
-      if(!v){ localStorage.removeItem(DATE_KEY); target=null; updateUI(null); return; }
-      localStorage.setItem(DATE_KEY,v);
-      target=nextBirthdayFromInput(v);
-      target=updateUI(target);
+    // Dark mode toggle
+    if(localStorage.getItem("birthday-widget-theme")==="dark") document.body.classList.add("dark");
+    darkToggle.addEventListener("click",()=>{
+      document.body.classList.toggle("dark");
+      localStorage.setItem("birthday-widget-theme", document.body.classList.contains("dark")?"dark":"light");
     });
 
-    shareBtn.addEventListener("click",()=>{
-      const v=dateInput.value;
-      if(v){
-        const url=new URL(window.location.href);
-        url.searchParams.set("bday",v);
+    // Read birthday from URL
+    let params = new URLSearchParams(window.location.search);
+    let target = null;
+    let v = params.get("bday");
+    if (v) {
+      dateInput.value = v;
+      target = nextBirthdayFromInput(v);
+      target = updateUI(target);
+    }
+
+    // Set button updates URL
+    setBtn.addEventListener("click", () => {
+      const val = dateInput.value;
+      if (!val) { updateUI(null); return; }
+      const url = new URL(window.location.href);
+      url.searchParams.set("bday", val);
+      window.location.href = url.toString(); // reload with this birthday
+    });
+
+    // Share button
+    shareBtn.addEventListener("click", () => {
+      const val = dateInput.value;
+      if(val){
+        const url = new URL(window.location.href);
+        url.searchParams.set("bday", val);
         navigator.clipboard.writeText(url.toString());
         alert("Sharable link copied!");
       }
     });
 
+    // Countdown updates every second
     setInterval(()=>{ if(target) target=updateUI(target); },1000);
-
-    const params=new URLSearchParams(window.location.search);
-    if(params.has("bday")){
-      const v=params.get("bday");
-      dateInput.value=v;
-      localStorage.setItem(DATE_KEY,v);
-      target=nextBirthdayFromInput(v);
-      target=updateUI(target);
-    }
   </script>
 </body>
-</html>
+</html> 
